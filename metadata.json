@@ -1,0 +1,5 @@
+{
+  "name": "DataSense Pro",
+  "description": "A comprehensive data-first analysis platform featuring Benford's Law, outlier detection, time series analysis, and network graph visualization.",
+  "requestFramePermissions": []
+}

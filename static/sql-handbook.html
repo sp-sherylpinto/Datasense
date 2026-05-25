@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Query Handbook — DataSense Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2c2420;
+    --ink-light: #7a6a64;
+    --cream: #faf8f5;
+    --cream-dark: #e3dcd3;
+    --gold: #9a3324;
+    --gold-light: #c24a35;
+    --sidebar-w: 280px;
+    --shadow: 0 2px 16px rgba(44,36,32,0.08);
+    --green: #166534;
+    --blue: #1e3a8a;
+    --amber: #92400e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: #1c1410;
+    color: #e8e4d8;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    padding: 24px 24px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    margin-bottom: 14px;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--gold-light); }
+
+  .sidebar-logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .sidebar-logo span { color: var(--gold-light); }
+
+  .sidebar-sub {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-top: 4px;
+  }
+
+  .search-box {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  #search-input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e8e4d8;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search-input::placeholder { color: rgba(255,255,255,0.3); }
+  #search-input:focus { border-color: var(--gold-light); }
+
+  .nav-section { padding: 14px 0 6px; }
+
+  .nav-section-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+    padding: 0 24px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 24px;
+    cursor: pointer;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--gold); }
+  .nav-item.active { background: rgba(154,51,36,0.18); color: var(--gold-light); border-left-color: var(--gold-light); font-weight: 500; }
+
+  .nav-icon { font-size: 14px; opacity: 0.75; flex-shrink: 0; width: 16px; text-align: center; }
+
+  /* ── MAIN ── */
+  #main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  #topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--cream-dark);
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  }
+
+  #breadcrumb { font-size: 12px; color: var(--ink-light); font-weight: 500; letter-spacing: 0.02em; }
+
+  .topbar-right { display: flex; gap: 8px; align-items: center; }
+
+  .badge {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+  }
+  .badge-gold { background: rgba(154,51,36,0.09); color: var(--gold); }
+  .badge-green { background: #f0fdf4; color: var(--green); }
+
+  #content { padding: 40px; max-width: 900px; }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TYPOGRAPHY ── */
+  .page-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 34px; font-weight: 600;
+    color: var(--ink); line-height: 1.2; margin-bottom: 8px;
+  }
+  .page-subtitle { font-size: 14px; color: var(--ink-light); margin-bottom: 32px; }
+
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px; font-weight: 600; color: var(--ink);
+    margin: 36px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--cream-dark);
+  }
+
+  h3 {
+    font-size: 13px; font-weight: 600; color: var(--gold);
+    margin: 22px 0 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  p { margin-bottom: 12px; color: var(--ink-light); }
+  ul, ol { padding-left: 20px; color: var(--ink-light); margin-bottom: 12px; }
+  li { margin-bottom: 5px; font-size: 14px; }
+  strong { color: var(--ink); }
+
+  /* ── CODE BLOCKS ── */
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--cream-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  .code-block {
+    background: #1c1410;
+    border-radius: 10px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  .code-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .code-label-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .copy-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.5);
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .copy-btn:hover { background: rgba(154,51,36,0.3); color: #fff; border-color: var(--gold-light); }
+  .copy-btn.copied { background: rgba(22,101,52,0.4); color: #86efac; border-color: #166534; }
+
+  pre {
+    padding: 18px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #e8e4d8;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* SQL syntax colouring via spans */
+  .kw   { color: #f59e0b; font-weight: 500; }   /* keywords */
+  .fn   { color: #60a5fa; }                       /* functions */
+  .str  { color: #86efac; }                       /* strings */
+  .num  { color: #f9a8d4; }                       /* numbers */
+  .cm   { color: rgba(255,255,255,0.3); font-style: italic; } /* comments */
+  .tbl  { color: #c4b5fd; }                       /* table/schema names */
+  .op   { color: #fb923c; }                       /* operators */
+
+  /* ── INFO BOXES ── */
+  .info-box {
+    border-radius: 8px; padding: 14px 18px; margin: 14px 0;
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 13.5px; line-height: 1.6;
+  }
+  .info-box .box-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .info-box p { margin-bottom: 0; color: inherit; }
+  .box-tip  { background: rgba(154,51,36,0.07); color: var(--gold); border-left: 4px solid var(--gold); }
+  .box-warn { background: #fffbeb; color: var(--amber); border-left: 4px solid #f59e0b; }
+  .box-info { background: #eff6ff; color: var(--blue); border-left: 4px solid #3b82f6; }
+  .box-good { background: #f0fdf4; color: var(--green); border-left: 4px solid #22c55e; }
+
+  /* ── TABLES ── */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0;
+    background: #fff; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow);
+  }
+  th {
+    background: #2c2420; color: #fff; padding: 10px 14px; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--cream-dark); color: var(--ink-light); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--cream); }
+  td code { font-size: 11.5px; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #1c1410 0%, #2c1c18 100%);
+    border-radius: 12px; padding: 36px 40px; margin-bottom: 32px; color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '⌗';
+    position: absolute; right: 28px; bottom: -8px;
+    font-size: 110px; opacity: 0.04; line-height: 1; font-family: 'DM Mono', monospace;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px; font-weight: 600; margin-bottom: 10px;
+  }
+  .hero-sub { font-size: 14px; opacity: 0.7; max-width: 560px; line-height: 1.6; }
+  .hero-meta { display: flex; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
+  .hero-stat {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 10px 18px; text-align: center;
+  }
+  .hero-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--gold-light); }
+  .hero-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.55; }
+
+  /* ── CARD GRID ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin: 18px 0; }
+  .ref-card {
+    background: #fff; border: 1px solid var(--cream-dark); border-radius: 10px;
+    padding: 18px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    border-top: 3px solid var(--gold);
+  }
+  .ref-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(44,36,32,0.12); }
+  .ref-card-title { font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 5px; }
+  .ref-card-desc { font-size: 12px; color: var(--ink-light); line-height: 1.5; }
+
+  /* ── AUDIT BADGE ── */
+  .audit-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 12px; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .audit-tag-high { background: #fde8e8; color: #991b1b; }
+  .audit-tag-med  { background: #fef3d0; color: #92400e; }
+  .audit-tag-ref  { background: #e8f0ff; color: #1e3a8a; }
+
+  /* ── SEARCH ── */
+  .search-hl { background: rgba(154,51,36,0.18); border-radius: 2px; }
+
+  /* ── QUICK REF TABLE ── */
+  .qr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+  .qr-item {
+    background: #fff; border: 1px solid var(--cream-dark); border-radius: 8px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .qr-keyword { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; color: var(--gold); }
+  .qr-desc { font-size: 12px; color: var(--ink-light); }
+
+  /* ── MOBILE ── */
+  #menu-toggle { display: none; }
+
+  @media (max-width: 768px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #main { margin-left: 0; }
+    #content { padding: 20px; }
+    #topbar { padding: 12px 20px; }
+    .hero { padding: 24px 20px; }
+    #menu-toggle {
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--cream-dark); border-radius: 6px;
+      padding: 6px 10px; cursor: pointer; font-size: 18px; color: var(--ink-light);
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="back-link">← DataSense Pro</a>
+    <div class="sidebar-logo">DataSense <span>&</span> SQL</div>
+    <div class="sidebar-sub">SQL Query Handbook</div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="search-input" placeholder="Search queries…" oninput="searchNav(this.value)" autocomplete="off">
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Getting Started</div>
+    <a class="nav-item active" onclick="show('intro')">
+      <span class="nav-icon">🏠</span> Introduction
+    </a>
+    <a class="nav-item" onclick="show('schema')">
+      <span class="nav-icon">🗂</span> Your Data & Schema
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Core SQL</div>
+    <a class="nav-item" onclick="show('select')">
+      <span class="nav-icon">🔍</span> SELECT Basics
+    </a>
+    <a class="nav-item" onclick="show('where')">
+      <span class="nav-icon">⚡</span> Filtering with WHERE
+    </a>
+    <a class="nav-item" onclick="show('orderby')">
+      <span class="nav-icon">↕</span> Sorting with ORDER BY
+    </a>
+    <a class="nav-item" onclick="show('aggregates')">
+      <span class="nav-icon">∑</span> Aggregations
+    </a>
+    <a class="nav-item" onclick="show('groupby')">
+      <span class="nav-icon">📊</span> GROUP BY & HAVING
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Data Types</div>
+    <a class="nav-item" onclick="show('text')">
+      <span class="nav-icon">🔡</span> Text Functions
+    </a>
+    <a class="nav-item" onclick="show('dates')">
+      <span class="nav-icon">📅</span> Date & Time
+    </a>
+    <a class="nav-item" onclick="show('nulls')">
+      <span class="nav-icon">∅</span> NULL Handling
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Advanced</div>
+    <a class="nav-item" onclick="show('subqueries')">
+      <span class="nav-icon">⬡</span> Subqueries
+    </a>
+    <a class="nav-item" onclick="show('joins')">
+      <span class="nav-icon">🔗</span> Joining Datasets
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Audit Toolkit</div>
+    <a class="nav-item" onclick="show('audit')">
+      <span class="nav-icon">🔎</span> Ready-to-Use Queries
+    </a>
+    <a class="nav-item" onclick="show('quickref')">
+      <span class="nav-icon">📋</span> Quick Reference
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div id="breadcrumb">DataSense Pro · SQL Query Handbook</div>
+    <div class="topbar-right">
+      <button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <span class="badge badge-gold">PostgreSQL</span>
+      <span class="badge badge-green">SELECT Only</span>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- ═══════════════════════════════════ INTRO ═══════════════════════════════════ -->
+    <div id="panel-intro" class="panel active">
+      <div class="hero">
+        <div class="hero-title">SQL Query Handbook</div>
+        <div class="hero-sub">Everything you need to query your datasets in DataSense Pro — from your first SELECT to advanced audit patterns. No prior SQL experience required.</div>
+        <div class="hero-meta">
+          <div class="hero-stat"><div class="hero-stat-num">8</div><div class="hero-stat-label">Core Concepts</div></div>
+          <div class="hero-stat"><div class="hero-stat-num">40+</div><div class="hero-stat-label">Example Queries</div></div>
+          <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Audit Templates</div></div>
+        </div>
+      </div>
+
+      <div class="page-title">Introduction to SQL</div>
+      <p class="page-subtitle">SQL (Structured Query Language) is how you talk to a database. In DataSense Pro, every file you upload becomes a database table, and SQL is the most powerful way to explore it.</p>
+
+      <div class="info-box box-info">
+        <span class="box-icon">ℹ️</span>
+        <p><strong>DataSense Pro only allows SELECT queries.</strong> You can read and explore any data, but you cannot modify, delete, or insert records. This keeps your data safe.</p>
+      </div>
+
+      <h2>How SQL Works</h2>
+      <p>Think of SQL as asking questions to your data. A basic SQL query has three parts:</p>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Anatomy of a SQL query</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>  column1, column2        <span class="cm">-- WHAT you want to see</span>
+<span class="kw">FROM</span>    <span class="tbl">datasets.ds_your_table</span>   <span class="cm">-- WHERE the data lives</span>
+<span class="kw">WHERE</span>   amount <span class="op">></span> <span class="num">10000</span>          <span class="cm">-- WHICH rows to include</span>
+<span class="kw">LIMIT</span>   <span class="num">100</span>;                      <span class="cm">-- HOW MANY rows to return</span></pre>
+      </div>
+
+      <h3>SQL is like a question</h3>
+      <p>Instead of: <em>"Show me all payments over ₹10,000 from the payments table"</em></p>
+      <p>You write: <code>SELECT * FROM datasets.ds_payments WHERE amount > 10000</code></p>
+
+      <div class="info-box box-tip">
+        <span class="box-icon">💡</span>
+        <p><strong>Tip:</strong> SQL keywords (SELECT, FROM, WHERE) are not case-sensitive. <code>select</code> works the same as <code>SELECT</code>. By convention we write keywords in UPPERCASE to make queries easier to read.</p>
+      </div>
+
+      <h2>What Can You Do in the Workbench?</h2>
+      <div class="card-grid">
+        <div class="ref-card" onclick="show('select')">
+          <div class="ref-card-title">🔍 Explore Data</div>
+          <div class="ref-card-desc">Select specific columns, preview rows, count records, and understand your dataset structure.</div>
+        </div>
+        <div class="ref-card" onclick="show('where')">
+          <div class="ref-card-title">⚡ Filter Records</div>
+          <div class="ref-card-desc">Find exactly the rows you need using conditions — dates, amounts, names, status codes.</div>
+        </div>
+        <div class="ref-card" onclick="show('aggregates')">
+          <div class="ref-card-title">∑ Summarise</div>
+          <div class="ref-card-desc">Compute totals, averages, counts, and other statistics across your entire dataset or groups.</div>
+        </div>
+        <div class="ref-card" onclick="show('audit')">
+          <div class="ref-card-title">🔎 Audit Queries</div>
+          <div class="ref-card-desc">Ready-to-copy queries for duplicates, round numbers, outliers, and period-end analysis.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ SCHEMA ═══════════════════════════════════ -->
+    <div id="panel-schema" class="panel">
+      <div class="page-title">Your Data &amp; Schema</div>
+      <p class="page-subtitle">Every file you upload in DataSense Pro becomes a dedicated table in PostgreSQL. Here's how to find and use them.</p>
+
+      <h2>Where Your Data Lives</h2>
+      <p>All uploaded datasets are stored in a PostgreSQL schema called <code>datasets</code>. Each file gets its own table with a unique name:</p>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Table naming pattern</span></div>
+        <pre><span class="tbl">datasets</span>.<span class="tbl">ds_a3f7c291b4e812d0</span>
+<span class="cm">-- ↑ schema   ↑ unique identifier (hex)</span></pre>
+      </div>
+
+      <div class="info-box box-tip">
+        <span class="box-icon">💡</span>
+        <p><strong>Finding your table name:</strong> In the SQL Workbench, click any dataset in the left panel. The editor will auto-populate with the correct table name. You can also see it in the "Saved Datasets" section on the Data Source tab.</p>
+      </div>
+
+      <h2>Listing Your Tables</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">See all your datasets</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    original_filename,
+    table_name,
+    row_count,
+    file_type,
+    created_at
+<span class="kw">FROM</span>    <span class="tbl">datasets</span>
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <h2>Exploring a Table's Structure</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">See column names and types for a table</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    column_name,
+    data_type,
+    is_nullable
+<span class="kw">FROM</span>   information_schema.columns
+<span class="kw">WHERE</span>  table_schema <span class="op">=</span> <span class="str">'datasets'</span>
+  <span class="kw">AND</span>  table_name   <span class="op">=</span> <span class="str">'ds_your_table_id_here'</span>
+<span class="kw">ORDER BY</span> ordinal_position;</pre>
+      </div>
+
+      <h2>Column Types in DataSense Pro</h2>
+      <table>
+        <thead><tr><th>Your Data</th><th>SQL Type</th><th>Example Values</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Whole numbers</td><td><code>BIGINT</code></td><td>1, 42, -100</td><td>Invoice numbers, quantities, IDs</td></tr>
+          <tr><td>Decimal numbers</td><td><code>DOUBLE PRECISION</code></td><td>12345.67, 0.5</td><td>Amounts, rates, percentages</td></tr>
+          <tr><td>Text</td><td><code>TEXT</code></td><td>'Vendor Name', 'Active'</td><td>Names, codes, status fields</td></tr>
+          <tr><td>Dates</td><td><code>TIMESTAMPTZ</code></td><td>2024-03-15 00:00:00+00</td><td>From CSV date columns</td></tr>
+          <tr><td>True/False</td><td><code>BOOLEAN</code></td><td>true, false</td><td>Flag columns</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box box-warn">
+        <span class="box-icon">⚠️</span>
+        <p><strong>Date columns imported as TEXT?</strong> This happens when dates are in a non-standard format (e.g. "15-Mar-24" or "15/03/2024"). Use <code>TO_DATE(date_col, 'DD/MM/YYYY')</code> to convert them in your queries.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ SELECT ═══════════════════════════════════ -->
+    <div id="panel-select" class="panel">
+      <div class="page-title">SELECT Basics</div>
+      <p class="page-subtitle">SELECT is how you retrieve data. It's the only statement you'll use in DataSense Pro.</p>
+
+      <h2>Select All Columns</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">All columns, first 100 rows</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">LIMIT</span>  <span class="num">100</span>;</pre>
+      </div>
+
+      <div class="info-box box-tip">
+        <span class="box-icon">💡</span>
+        <p><code>*</code> means "all columns". Always add <code>LIMIT</code> when exploring large tables — the Workbench caps at 500 rows by default.</p>
+      </div>
+
+      <h2>Select Specific Columns</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Pick only the columns you need</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    invoice_date,
+    amount,
+    status
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">LIMIT</span> <span class="num">200</span>;</pre>
+      </div>
+
+      <h2>Rename Columns with Aliases</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Give columns friendlier names in results</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name    <span class="kw">AS</span> <span class="str">"Vendor"</span>,
+    invoice_date   <span class="kw">AS</span> <span class="str">"Invoice Date"</span>,
+    amount         <span class="kw">AS</span> <span class="str">"Amount (₹)"</span>
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <h2>Calculated Columns</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Create a new column from a calculation</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    tax_amount,
+    amount <span class="op">+</span> tax_amount        <span class="kw">AS</span> total_payable,
+    amount <span class="op">*</span> <span class="num">0.18</span>              <span class="kw">AS</span> gst_18_percent,
+    amount <span class="op">/</span> <span class="num">100000</span>            <span class="kw">AS</span> amount_in_lakhs
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <h2>Count Rows</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">How many rows are in your table?</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> total_rows
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <h2>Remove Duplicates with DISTINCT</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Unique values in a column</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- All unique vendor names</span>
+<span class="kw">SELECT DISTINCT</span> vendor_name
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> vendor_name;
+
+<span class="cm">-- Count of unique vendors</span>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> vendor_name) <span class="kw">AS</span> unique_vendors
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ WHERE ═══════════════════════════════════ -->
+    <div id="panel-where" class="panel">
+      <div class="page-title">Filtering with WHERE</div>
+      <p class="page-subtitle">WHERE narrows down which rows to include in your results. Think of it as applying a filter to your data.</p>
+
+      <h2>Comparison Operators</h2>
+      <table>
+        <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>=</code></td><td>Equal to</td><td><code>status = 'Active'</code></td></tr>
+          <tr><td><code>!=</code> or <code>&lt;&gt;</code></td><td>Not equal to</td><td><code>status != 'Cancelled'</code></td></tr>
+          <tr><td><code>&gt;</code></td><td>Greater than</td><td><code>amount &gt; 100000</code></td></tr>
+          <tr><td><code>&lt;</code></td><td>Less than</td><td><code>amount &lt; 500</code></td></tr>
+          <tr><td><code>&gt;=</code></td><td>Greater than or equal</td><td><code>amount &gt;= 50000</code></td></tr>
+          <tr><td><code>&lt;=</code></td><td>Less than or equal</td><td><code>amount &lt;= 99999</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Basic WHERE examples</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Transactions above 1 lakh</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="op">></span> <span class="num">100000</span>;
+
+<span class="cm">-- Only a specific vendor</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="op">=</span> <span class="str">'ABC Enterprises Pvt Ltd'</span>;</pre>
+      </div>
+
+      <h2>AND / OR — Combining Conditions</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Multiple conditions</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- AND: both conditions must be true</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="op">></span> <span class="num">50000</span>
+  <span class="kw">AND</span>  status <span class="op">=</span> <span class="str">'Paid'</span>;
+
+<span class="cm">-- OR: either condition can be true</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  status <span class="op">=</span> <span class="str">'Pending'</span>
+  <span class="kw">OR</span>   status <span class="op">=</span> <span class="str">'Overdue'</span>;
+
+<span class="cm">-- Combining AND / OR — use brackets to be explicit</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="op">></span> <span class="num">100000</span>
+  <span class="kw">AND</span>  (status <span class="op">=</span> <span class="str">'Pending'</span> <span class="kw">OR</span> status <span class="op">=</span> <span class="str">'Overdue'</span>);</pre>
+      </div>
+
+      <h2>IN — Match a List of Values</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Filter by multiple values at once</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Specific status codes</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  status <span class="kw">IN</span> (<span class="str">'Pending'</span>, <span class="str">'Overdue'</span>, <span class="str">'Disputed'</span>);
+
+<span class="cm">-- Exclude certain vendors</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="kw">NOT IN</span> (<span class="str">'Internal Transfer'</span>, <span class="str">'Opening Balance'</span>);</pre>
+      </div>
+
+      <h2>BETWEEN — Range of Values</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Values within a range (inclusive)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Amounts between 50,000 and 5,00,000</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="kw">BETWEEN</span> <span class="num">50000</span> <span class="kw">AND</span> <span class="num">500000</span>;
+
+<span class="cm">-- Date range (financial year)</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  invoice_date <span class="kw">BETWEEN</span> <span class="str">'2024-04-01'</span> <span class="kw">AND</span> <span class="str">'2025-03-31'</span>;</pre>
+      </div>
+
+      <h2>LIKE — Pattern Matching</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Find text that matches a pattern</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- % matches any sequence of characters</span>
+<span class="cm">-- _ matches exactly one character</span>
+
+<span class="cm">-- Names starting with "Sharma"</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="kw">LIKE</span> <span class="str">'Sharma%'</span>;
+
+<span class="cm">-- Names containing "Trading"</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="kw">LIKE</span> <span class="str">'%Trading%'</span>;
+
+<span class="cm">-- Case-insensitive: use ILIKE instead</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="kw">ILIKE</span> <span class="str">'%pvt ltd%'</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ ORDER BY ═══════════════════════════════════ -->
+    <div id="panel-orderby" class="panel">
+      <div class="page-title">Sorting with ORDER BY</div>
+      <p class="page-subtitle">ORDER BY controls the sequence in which rows appear in your results.</p>
+
+      <h2>Basic Sorting</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Sort results</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Largest amounts first (descending)</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>;
+
+<span class="cm">-- Earliest dates first (ascending — this is the default)</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> invoice_date <span class="kw">ASC</span>;
+
+<span class="cm">-- Sort by vendor name, then by amount within each vendor</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> vendor_name <span class="kw">ASC</span>, amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <h2>Top N Records</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Find the largest transactions</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Top 20 largest transactions</span>
+<span class="kw">SELECT</span>
+    vendor_name,
+    invoice_date,
+    amount
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">20</span>;</pre>
+      </div>
+
+      <div class="info-box box-tip">
+        <span class="box-icon">💡</span>
+        <p><strong>Audit tip:</strong> Always sort by amount DESC when starting an audit review — the largest transactions are usually the highest risk and deserve the most attention.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ AGGREGATES ═══════════════════════════════════ -->
+    <div id="panel-aggregates" class="panel">
+      <div class="page-title">Aggregation Functions</div>
+      <p class="page-subtitle">Aggregation functions summarise multiple rows into a single value — totals, counts, averages, and more.</p>
+
+      <h2>Core Aggregate Functions</h2>
+      <table>
+        <thead><tr><th>Function</th><th>What it does</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>COUNT(*)</code></td><td>Count all rows</td><td><code>COUNT(*) → 4,823</code></td></tr>
+          <tr><td><code>COUNT(col)</code></td><td>Count non-NULL values in column</td><td><code>COUNT(amount) → 4,801</code></td></tr>
+          <tr><td><code>SUM(col)</code></td><td>Total of all values</td><td><code>SUM(amount) → 12,34,56,789</code></td></tr>
+          <tr><td><code>AVG(col)</code></td><td>Average (mean) value</td><td><code>AVG(amount) → 25,612</code></td></tr>
+          <tr><td><code>MIN(col)</code></td><td>Smallest value</td><td><code>MIN(amount) → 50</code></td></tr>
+          <tr><td><code>MAX(col)</code></td><td>Largest value</td><td><code>MAX(amount) → 98,50,000</code></td></tr>
+          <tr><td><code>ROUND(val, d)</code></td><td>Round to d decimal places</td><td><code>ROUND(AVG(amount), 2)</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Dataset summary statistics</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                        <span class="kw">AS</span> total_transactions,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(amount), <span class="num">2</span>)          <span class="kw">AS</span> total_value,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(amount), <span class="num">2</span>)          <span class="kw">AS</span> average_amount,
+    <span class="fn">MIN</span>(amount)                      <span class="kw">AS</span> smallest,
+    <span class="fn">MAX</span>(amount)                      <span class="kw">AS</span> largest,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> vendor_name)     <span class="kw">AS</span> unique_vendors
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ GROUP BY ═══════════════════════════════════ -->
+    <div id="panel-groupby" class="panel">
+      <div class="page-title">GROUP BY &amp; HAVING</div>
+      <p class="page-subtitle">GROUP BY aggregates rows that share the same value in a column — e.g., totals per vendor, counts per month.</p>
+
+      <h2>GROUP BY</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Total amount per vendor</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)              <span class="kw">AS</span> invoice_count,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(amount), <span class="num">2</span>) <span class="kw">AS</span> total_paid,
+    <span class="fn">ROUND</span>(<span class="fn">AVG</span>(amount), <span class="num">2</span>) <span class="kw">AS</span> avg_invoice
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name
+<span class="kw">ORDER BY</span> total_paid <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>   <span class="num">20</span>;</pre>
+      </div>
+
+      <div class="info-box box-tip">
+        <span class="box-icon">💡</span>
+        <p><strong>Rule:</strong> Every column in SELECT that is <em>not</em> inside an aggregate function (COUNT, SUM, AVG…) must appear in GROUP BY.</p>
+      </div>
+
+      <h2>Group by Multiple Columns</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Monthly totals per vendor</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)  <span class="kw">AS</span> month,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                            <span class="kw">AS</span> invoices,
+    <span class="fn">SUM</span>(amount)                          <span class="kw">AS</span> total
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name, <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)
+<span class="kw">ORDER BY</span> month, total <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <h2>HAVING — Filter After Grouping</h2>
+      <p>WHERE filters individual rows <em>before</em> grouping. HAVING filters groups <em>after</em> aggregation.</p>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Vendors with total payments above 10 lakh</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)     <span class="kw">AS</span> invoice_count,
+    <span class="fn">SUM</span>(amount)  <span class="kw">AS</span> total_paid
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name
+<span class="kw">HAVING</span>   <span class="fn">SUM</span>(amount) <span class="op">></span> <span class="num">1000000</span>   <span class="cm">-- only groups where total > 10L</span>
+<span class="kw">ORDER BY</span> total_paid <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Vendors with suspiciously high invoice counts</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)    <span class="kw">AS</span> invoice_count,
+    <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">></span> <span class="num">50</span>             <span class="cm">-- more than 50 invoices</span>
+<span class="kw">ORDER BY</span> invoice_count <span class="kw">DESC</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ TEXT ═══════════════════════════════════ -->
+    <div id="panel-text" class="panel">
+      <div class="page-title">Text Functions</div>
+      <p class="page-subtitle">Functions for cleaning, searching, and transforming text columns.</p>
+
+      <table>
+        <thead><tr><th>Function</th><th>What it does</th><th>Example → Result</th></tr></thead>
+        <tbody>
+          <tr><td><code>UPPER(col)</code></td><td>Convert to uppercase</td><td><code>UPPER('hello') → 'HELLO'</code></td></tr>
+          <tr><td><code>LOWER(col)</code></td><td>Convert to lowercase</td><td><code>LOWER('HELLO') → 'hello'</code></td></tr>
+          <tr><td><code>TRIM(col)</code></td><td>Remove leading/trailing spaces</td><td><code>TRIM('  hi  ') → 'hi'</code></td></tr>
+          <tr><td><code>LENGTH(col)</code></td><td>Count characters</td><td><code>LENGTH('hello') → 5</code></td></tr>
+          <tr><td><code>LEFT(col, n)</code></td><td>First n characters</td><td><code>LEFT('AAABCD123', 3) → 'AAA'</code></td></tr>
+          <tr><td><code>RIGHT(col, n)</code></td><td>Last n characters</td><td><code>RIGHT('MH2024PLC001', 3) → '001'</code></td></tr>
+          <tr><td><code>SUBSTRING(col, start, len)</code></td><td>Extract a portion</td><td><code>SUBSTRING('IN-2024-001', 4, 4) → '2024'</code></td></tr>
+          <tr><td><code>REPLACE(col, from, to)</code></td><td>Replace text</td><td><code>REPLACE('Rs. 500', 'Rs. ', '') → '500'</code></td></tr>
+          <tr><td><code>col || ' ' || col2</code></td><td>Concatenate strings</td><td><code>'ABC' || ' Ltd' → 'ABC Ltd'</code></td></tr>
+          <tr><td><code>REGEXP_REPLACE</code></td><td>Replace using regex</td><td>Remove all non-digits from a field</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Practical text examples</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Standardise vendor names for grouping</span>
+<span class="kw">SELECT</span>
+    <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(vendor_name))  <span class="kw">AS</span> vendor_clean,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                   <span class="kw">AS</span> count
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(vendor_name))
+<span class="kw">ORDER BY</span> count <span class="kw">DESC</span>;
+
+<span class="cm">-- Extract year from an invoice number like "INV-2024-00123"</span>
+<span class="kw">SELECT</span>
+    invoice_number,
+    <span class="fn">SUBSTRING</span>(invoice_number, <span class="num">5</span>, <span class="num">4</span>)  <span class="kw">AS</span> invoice_year
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ DATES ═══════════════════════════════════ -->
+    <div id="panel-dates" class="panel">
+      <div class="page-title">Date &amp; Time</div>
+      <p class="page-subtitle">Working with date columns — filtering by period, extracting parts, and computing differences.</p>
+
+      <h2>Extracting Parts of a Date</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">EXTRACT and DATE_TRUNC</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    invoice_date,
+    <span class="fn">EXTRACT</span>(<span class="kw">YEAR</span>  <span class="kw">FROM</span> invoice_date)   <span class="kw">AS</span> year,
+    <span class="fn">EXTRACT</span>(<span class="kw">MONTH</span> <span class="kw">FROM</span> invoice_date)   <span class="kw">AS</span> month,
+    <span class="fn">EXTRACT</span>(<span class="kw">DAY</span>   <span class="kw">FROM</span> invoice_date)   <span class="kw">AS</span> day,
+    <span class="fn">EXTRACT</span>(DOW    <span class="kw">FROM</span> invoice_date)   <span class="kw">AS</span> day_of_week, <span class="cm">-- 0=Sun, 6=Sat</span>
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)   <span class="kw">AS</span> month_start,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'quarter'</span>, invoice_date) <span class="kw">AS</span> quarter_start
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <h2>Date Range Filtering</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Filter by financial year, quarter, or month</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Indian financial year FY 2024-25</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  invoice_date <span class="kw">BETWEEN</span> <span class="str">'2024-04-01'</span> <span class="kw">AND</span> <span class="str">'2025-03-31'</span>;
+
+<span class="cm">-- A specific month</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date) <span class="op">=</span> <span class="str">'2024-12-01'</span>;
+
+<span class="cm">-- Last 90 days from today</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  invoice_date <span class="op">>=</span> <span class="fn">NOW</span>() <span class="op">-</span> <span class="kw">INTERVAL</span> <span class="str">'90 days'</span>;</pre>
+      </div>
+
+      <h2>Monthly Totals</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Aggregate by month</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)  <span class="kw">AS</span> month,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                            <span class="kw">AS</span> invoice_count,
+    <span class="fn">SUM</span>(amount)                          <span class="kw">AS</span> total_amount
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  invoice_date <span class="kw">BETWEEN</span> <span class="str">'2024-04-01'</span> <span class="kw">AND</span> <span class="str">'2025-03-31'</span>
+<span class="kw">GROUP BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)
+<span class="kw">ORDER BY</span> month;</pre>
+      </div>
+
+      <h2>Days Between Dates (Ageing)</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Compute how old an invoice is</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    invoice_number,
+    vendor_name,
+    invoice_date,
+    due_date,
+    <span class="fn">EXTRACT</span>(DAY <span class="kw">FROM</span> <span class="fn">AGE</span>(due_date, invoice_date))  <span class="kw">AS</span> credit_days,
+    <span class="fn">EXTRACT</span>(DAY <span class="kw">FROM</span> <span class="fn">AGE</span>(<span class="fn">NOW</span>(), due_date))          <span class="kw">AS</span> days_overdue
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span> due_date <span class="op"><</span> <span class="fn">NOW</span>()
+<span class="kw">ORDER BY</span> days_overdue <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <div class="info-box box-warn">
+        <span class="box-icon">⚠️</span>
+        <p><strong>Date stored as TEXT?</strong> Use <code>TO_DATE(col, 'DD/MM/YYYY')</code> to convert. For example: <code>TO_DATE(invoice_date, 'DD-MON-YY')</code> for dates like "15-Mar-24".</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ NULLS ═══════════════════════════════════ -->
+    <div id="panel-nulls" class="panel">
+      <div class="page-title">NULL Handling</div>
+      <p class="page-subtitle">NULL means "no value" or "unknown". NULL is not zero, not empty string — it's the absence of data. It requires special handling in SQL.</p>
+
+      <div class="info-box box-warn">
+        <span class="box-icon">⚠️</span>
+        <p><strong>Critical:</strong> <code>amount = NULL</code> never works — always use <code>amount IS NULL</code>. This is one of the most common SQL mistakes beginners make.</p>
+      </div>
+
+      <h2>Testing for NULL</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Find and count missing values</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="cm">-- Rows where vendor name is missing</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  vendor_name <span class="kw">IS NULL</span>;
+
+<span class="cm">-- Rows where amount IS provided</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="kw">IS NOT NULL</span>;
+
+<span class="cm">-- Count nulls per column</span>
+<span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                              <span class="kw">AS</span> total_rows,
+    <span class="fn">COUNT</span>(vendor_name)                    <span class="kw">AS</span> vendor_filled,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(vendor_name)        <span class="kw">AS</span> vendor_missing,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(amount)             <span class="kw">AS</span> amount_missing
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <h2>COALESCE — Replace NULL with a Default</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Substitute a value when NULL</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">COALESCE</span>(vendor_name, <span class="str">'Unknown Vendor'</span>)  <span class="kw">AS</span> vendor,
+    <span class="fn">COALESCE</span>(amount, <span class="num">0</span>)                      <span class="kw">AS</span> amount,
+    <span class="fn">COALESCE</span>(notes, description, <span class="str">'No info'</span>) <span class="kw">AS</span> remarks <span class="cm">-- tries each in order</span>
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ SUBQUERIES ═══════════════════════════════════ -->
+    <div id="panel-subqueries" class="panel">
+      <div class="page-title">Subqueries</div>
+      <p class="page-subtitle">A subquery is a query nested inside another query. It lets you answer more complex questions in a single statement.</p>
+
+      <h2>Filter Using a Subquery</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Transactions above the average amount</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="op">></span> (
+    <span class="kw">SELECT</span> <span class="fn">AVG</span>(amount)
+    <span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+)
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <h2>Subquery in SELECT — Computed Column</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Show each transaction vs. overall average</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    (<span class="kw">SELECT</span> <span class="fn">ROUND</span>(<span class="fn">AVG</span>(amount), <span class="num">2</span>) <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>) <span class="kw">AS</span> avg_amount,
+    amount <span class="op">-</span> (<span class="kw">SELECT</span> <span class="fn">AVG</span>(amount) <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>)  <span class="kw">AS</span> deviation
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">ORDER BY</span> deviation <span class="kw">DESC</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ JOINS ═══════════════════════════════════ -->
+    <div id="panel-joins" class="panel">
+      <div class="page-title">Joining Datasets</div>
+      <p class="page-subtitle">JOIN combines rows from two different tables based on a common column — for example, matching invoice data with a vendor master list.</p>
+
+      <div class="info-box box-info">
+        <span class="box-icon">ℹ️</span>
+        <p>In DataSense Pro, you can join any of your uploaded datasets. Both tables must be in the <code>datasets</code> schema. Use the Workbench left panel to find the full table names of each dataset.</p>
+      </div>
+
+      <h2>INNER JOIN — Only Matching Rows</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Match invoices with vendor master</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    inv.invoice_number,
+    inv.amount,
+    inv.invoice_date,
+    vend.vendor_category,
+    vend.pan_number
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_invoices_table</span>  inv
+<span class="kw">JOIN</span>  <span class="tbl">datasets.ds_vendor_master</span>    vend
+  <span class="kw">ON</span>  <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(inv.vendor_name)) <span class="op">=</span> <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(vend.vendor_name))
+<span class="kw">ORDER BY</span> inv.amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <h2>LEFT JOIN — Keep All Rows from Left Table</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Invoices with no vendor master record</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    inv.invoice_number,
+    inv.vendor_name,
+    inv.amount,
+    vend.pan_number  <span class="cm">-- will be NULL if no match</span>
+<span class="kw">FROM</span>      <span class="tbl">datasets.ds_invoices_table</span>  inv
+<span class="kw">LEFT JOIN</span> <span class="tbl">datasets.ds_vendor_master</span>    vend
+  <span class="kw">ON</span>  <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(inv.vendor_name)) <span class="op">=</span> <span class="fn">UPPER</span>(<span class="fn">TRIM</span>(vend.vendor_name))
+<span class="kw">WHERE</span> vend.vendor_name <span class="kw">IS NULL</span>   <span class="cm">-- no matching master record — flag these!</span>
+<span class="kw">ORDER BY</span> inv.amount <span class="kw">DESC</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ AUDIT TOOLKIT ═══════════════════════════════════ -->
+    <div id="panel-audit" class="panel">
+      <div class="page-title">Audit Toolkit</div>
+      <p class="page-subtitle">Ready-to-copy SQL queries for the most common audit and investigation scenarios. Replace <code>ds_your_table</code> with your actual table name from the left panel.</p>
+
+      <div class="info-box box-good">
+        <span class="box-icon">✅</span>
+        <p>These queries are safe — they only read data. Click <strong>Copy</strong> on any query, paste it into the Workbench editor, replace the table name, and run.</p>
+      </div>
+
+      <!-- DUPLICATES -->
+      <h2>1. Finding Duplicate Transactions</h2>
+      <p>Duplicate payments or invoices are one of the most common fraud and error types in accounts payable.</p>
+
+      <div class="audit-tag audit-tag-high">🔴 High Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Exact duplicate rows</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    invoice_date,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)  <span class="kw">AS</span> occurrences
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name, amount, invoice_date
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">></span> <span class="num">1</span>
+<span class="kw">ORDER BY</span> occurrences <span class="kw">DESC</span>, amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Same amount to same vendor on different dates</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> invoice_date)  <span class="kw">AS</span> on_different_dates,
+    <span class="fn">SUM</span>(amount)                    <span class="kw">AS</span> total_paid
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name, amount
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> invoice_date) <span class="op">></span> <span class="num">1</span>
+<span class="kw">ORDER BY</span> total_paid <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <!-- ROUND NUMBERS -->
+      <h2>2. Round Number Analysis</h2>
+      <p>Humans fabricating figures tend to choose round numbers. Naturally occurring amounts are rarely perfectly round.</p>
+
+      <div class="audit-tag audit-tag-high">🔴 High Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Transactions that are exact multiples of 1000</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    invoice_date
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="op">%</span> <span class="num">1000</span> <span class="op">=</span> <span class="num">0</span>          <span class="cm">-- divisible by 1000</span>
+  <span class="kw">AND</span>  amount <span class="op">></span> <span class="num">0</span>
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Summary: what % of transactions are round numbers?</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                                          <span class="kw">AS</span> total,
+    <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> amount <span class="op">%</span> <span class="num">1000</span> <span class="op">=</span> <span class="num">0</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> round_thousands,
+    <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> amount <span class="op">%</span> <span class="num">10000</span> <span class="op">=</span> <span class="num">0</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="kw">AS</span> round_ten_thousands,
+    <span class="fn">ROUND</span>(
+        <span class="num">100.0</span> <span class="op">*</span> <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> amount <span class="op">%</span> <span class="num">1000</span> <span class="op">=</span> <span class="num">0</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">ELSE</span> <span class="num">0</span> <span class="kw">END</span>) <span class="op">/</span> <span class="fn">COUNT</span>(<span class="op">*</span>), <span class="num">1</span>
+    )                                                  <span class="kw">AS</span> round_pct
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span> amount <span class="op">></span> <span class="num">0</span>;</pre>
+      </div>
+
+      <!-- JUST BELOW THRESHOLD -->
+      <h2>3. Just-Below-Threshold Payments</h2>
+      <p>Employees sometimes split payments just below approval thresholds (e.g. ₹49,999 when the threshold is ₹50,000).</p>
+
+      <div class="audit-tag audit-tag-high">🔴 High Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Payments between 48,000 and 50,000 — below a 50K threshold</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    invoice_date,
+    invoice_number
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span>  amount <span class="kw">BETWEEN</span> <span class="num">48000</span> <span class="kw">AND</span> <span class="num">49999</span>
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <!-- TOP N VENDORS -->
+      <h2>4. Vendor Concentration</h2>
+      <p>Identifies vendors that account for a disproportionate share of total payments.</p>
+
+      <div class="audit-tag audit-tag-med">🟡 Medium Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Top 10 vendors by total amount</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    <span class="fn">COUNT</span>(<span class="op">*</span>)              <span class="kw">AS</span> invoice_count,
+    <span class="fn">ROUND</span>(<span class="fn">SUM</span>(amount), <span class="num">2</span>) <span class="kw">AS</span> total_paid,
+    <span class="fn">ROUND</span>(
+        <span class="num">100.0</span> <span class="op">*</span> <span class="fn">SUM</span>(amount) <span class="op">/</span>
+        (<span class="kw">SELECT</span> <span class="fn">SUM</span>(amount) <span class="kw">FROM</span> <span class="tbl">datasets.ds_your_table</span>),
+        <span class="num">2</span>
+    )                       <span class="kw">AS</span> pct_of_total
+<span class="kw">FROM</span>   <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> vendor_name
+<span class="kw">ORDER BY</span> total_paid <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>   <span class="num">10</span>;</pre>
+      </div>
+
+      <!-- MISSING VALUES -->
+      <h2>5. Missing Value Audit</h2>
+      <p>Incomplete records — missing vendor names, invoice numbers, or amounts — are an immediate red flag.</p>
+
+      <div class="audit-tag audit-tag-med">🟡 Medium Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Null value summary for every key column</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(<span class="op">*</span>)                                               <span class="kw">AS</span> total_rows,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(vendor_name)    <span class="kw">AS</span> missing_vendor,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(amount)          <span class="kw">AS</span> missing_amount,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(invoice_date)   <span class="kw">AS</span> missing_date,
+    <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fn">COUNT</span>(invoice_number) <span class="kw">AS</span> missing_inv_num
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>;</pre>
+      </div>
+
+      <!-- WEEKEND TRANSACTIONS -->
+      <h2>6. Weekend &amp; Holiday Transactions</h2>
+      <p>Transactions on weekends or public holidays may indicate bypassed controls.</p>
+
+      <div class="audit-tag audit-tag-med">🟡 Medium Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Transactions posted on weekends</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    vendor_name,
+    amount,
+    invoice_date,
+    <span class="kw">CASE</span> <span class="fn">EXTRACT</span>(DOW <span class="kw">FROM</span> invoice_date)
+        <span class="kw">WHEN</span> <span class="num">0</span> <span class="kw">THEN</span> <span class="str">'Sunday'</span>
+        <span class="kw">WHEN</span> <span class="num">6</span> <span class="kw">THEN</span> <span class="str">'Saturday'</span>
+    <span class="kw">END</span> <span class="kw">AS</span> day_name
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">WHERE</span> <span class="fn">EXTRACT</span>(DOW <span class="kw">FROM</span> invoice_date) <span class="kw">IN</span> (<span class="num">0</span>, <span class="num">6</span>)  <span class="cm">-- 0=Sunday, 6=Saturday</span>
+<span class="kw">ORDER BY</span> amount <span class="kw">DESC</span>;</pre>
+      </div>
+
+      <!-- PERIOD-END SPIKE -->
+      <h2>7. Period-End Concentration</h2>
+      <p>High volumes at month-end or year-end can indicate rushed postings, back-dating, or window dressing.</p>
+
+      <div class="audit-tag audit-tag-high">🔴 High Risk</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Last 3 days of each month vs. rest of month</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">SELECT</span>
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)             <span class="kw">AS</span> month,
+    <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span>
+        <span class="fn">EXTRACT</span>(DAY <span class="kw">FROM</span>
+            (<span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date) <span class="op">+</span> <span class="kw">INTERVAL</span> <span class="str">'1 month'</span>) <span class="op">-</span>
+            invoice_date
+        ) <span class="op"><=</span> <span class="num">3</span>
+        <span class="kw">THEN</span> amount <span class="kw">ELSE</span> <span class="num">0</span>
+    <span class="kw">END</span>)                                           <span class="kw">AS</span> last_3_days,
+    <span class="fn">SUM</span>(amount)                                    <span class="kw">AS</span> month_total,
+    <span class="fn">ROUND</span>(<span class="num">100.0</span> <span class="op">*</span> <span class="fn">SUM</span>(<span class="kw">CASE WHEN</span>
+        <span class="fn">EXTRACT</span>(DAY <span class="kw">FROM</span>
+            (<span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date) <span class="op">+</span> <span class="kw">INTERVAL</span> <span class="str">'1 month'</span>) <span class="op">-</span>
+            invoice_date
+        ) <span class="op"><=</span> <span class="num">3</span>
+        <span class="kw">THEN</span> amount <span class="kw">ELSE</span> <span class="num">0</span>
+    <span class="kw">END</span>) <span class="op">/</span> <span class="fn">NULLIF</span>(<span class="fn">SUM</span>(amount),<span class="num">0</span>), <span class="num">1</span>)             <span class="kw">AS</span> last3_pct
+<span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+<span class="kw">GROUP BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, invoice_date)
+<span class="kw">ORDER BY</span> month;</pre>
+      </div>
+
+      <!-- DATA GAPS -->
+      <h2>8. Sequential Number Gaps</h2>
+      <p>Gaps in invoice or voucher sequences may indicate deleted or missing documents.</p>
+
+      <div class="audit-tag audit-tag-ref">🔵 Reference</div>
+
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">Find gaps in a numeric invoice sequence</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">WITH</span> numbered <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        invoice_number::BIGINT                          <span class="kw">AS</span> inv_num,
+        <span class="fn">LEAD</span>(invoice_number::BIGINT) <span class="kw">OVER</span>
+            (<span class="kw">ORDER BY</span> invoice_number::BIGINT)           <span class="kw">AS</span> next_num
+    <span class="kw">FROM</span>  <span class="tbl">datasets.ds_your_table</span>
+    <span class="kw">WHERE</span> invoice_number <span class="op">~</span> <span class="str">'^[0-9]+$'</span>               <span class="cm">-- numeric only</span>
+)
+<span class="kw">SELECT</span>
+    inv_num         <span class="kw">AS</span> last_before_gap,
+    next_num        <span class="kw">AS</span> first_after_gap,
+    next_num <span class="op">-</span> inv_num <span class="op">-</span> <span class="num">1</span>  <span class="kw">AS</span> missing_count
+<span class="kw">FROM</span>  numbered
+<span class="kw">WHERE</span> next_num <span class="op">-</span> inv_num <span class="op">></span> <span class="num">1</span>
+<span class="kw">ORDER BY</span> missing_count <span class="kw">DESC</span>;</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ QUICK REF ═══════════════════════════════════ -->
+    <div id="panel-quickref" class="panel">
+      <div class="page-title">Quick Reference</div>
+      <p class="page-subtitle">A cheat-sheet of the most common SQL clauses, functions, and patterns.</p>
+
+      <h2>Query Clause Order</h2>
+      <div class="code-block">
+        <div class="code-label"><span class="code-label-text">SQL clauses must appear in this order</span></div>
+        <pre><span class="kw">SELECT</span>   <span class="cm">columns / expressions</span>
+<span class="kw">FROM</span>     <span class="cm">table(s)</span>
+<span class="kw">WHERE</span>    <span class="cm">row filter (before grouping)</span>
+<span class="kw">GROUP BY</span> <span class="cm">grouping columns</span>
+<span class="kw">HAVING</span>   <span class="cm">group filter (after grouping)</span>
+<span class="kw">ORDER BY</span> <span class="cm">sort columns</span>
+<span class="kw">LIMIT</span>    <span class="cm">max rows to return</span></pre>
+      </div>
+
+      <h2>Common Functions</h2>
+      <div class="qr-grid">
+        <div class="qr-item"><span class="qr-keyword">COUNT(*)</span><span class="qr-desc">Total row count including NULLs</span></div>
+        <div class="qr-item"><span class="qr-keyword">COUNT(col)</span><span class="qr-desc">Count non-NULL values in column</span></div>
+        <div class="qr-item"><span class="qr-keyword">SUM(col)</span><span class="qr-desc">Total of all numeric values</span></div>
+        <div class="qr-item"><span class="qr-keyword">AVG(col)</span><span class="qr-desc">Arithmetic mean (ignores NULLs)</span></div>
+        <div class="qr-item"><span class="qr-keyword">MIN(col)</span><span class="qr-desc">Smallest value in column</span></div>
+        <div class="qr-item"><span class="qr-keyword">MAX(col)</span><span class="qr-desc">Largest value in column</span></div>
+        <div class="qr-item"><span class="qr-keyword">ROUND(x, d)</span><span class="qr-desc">Round x to d decimal places</span></div>
+        <div class="qr-item"><span class="qr-keyword">COALESCE(a,b)</span><span class="qr-desc">First non-NULL value from a, b…</span></div>
+        <div class="qr-item"><span class="qr-keyword">UPPER(col)</span><span class="qr-desc">Convert text to uppercase</span></div>
+        <div class="qr-item"><span class="qr-keyword">LOWER(col)</span><span class="qr-desc">Convert text to lowercase</span></div>
+        <div class="qr-item"><span class="qr-keyword">TRIM(col)</span><span class="qr-desc">Remove leading/trailing spaces</span></div>
+        <div class="qr-item"><span class="qr-keyword">LENGTH(col)</span><span class="qr-desc">Number of characters in text</span></div>
+        <div class="qr-item"><span class="qr-keyword">EXTRACT(YEAR FROM col)</span><span class="qr-desc">Get year from a date</span></div>
+        <div class="qr-item"><span class="qr-keyword">DATE_TRUNC('month', col)</span><span class="qr-desc">Truncate date to month start</span></div>
+        <div class="qr-item"><span class="qr-keyword">NOW()</span><span class="qr-desc">Current timestamp</span></div>
+        <div class="qr-item"><span class="qr-keyword">INTERVAL '90 days'</span><span class="qr-desc">Time interval for date arithmetic</span></div>
+      </div>
+
+      <h2>WHERE Operators</h2>
+      <div class="qr-grid">
+        <div class="qr-item"><span class="qr-keyword">col = 'value'</span><span class="qr-desc">Exactly equal</span></div>
+        <div class="qr-item"><span class="qr-keyword">col != 'value'</span><span class="qr-desc">Not equal</span></div>
+        <div class="qr-item"><span class="qr-keyword">col > 100</span><span class="qr-desc">Greater than</span></div>
+        <div class="qr-item"><span class="qr-keyword">col BETWEEN 1 AND 100</span><span class="qr-desc">Inclusive range</span></div>
+        <div class="qr-item"><span class="qr-keyword">col IN ('a','b','c')</span><span class="qr-desc">Matches any in list</span></div>
+        <div class="qr-item"><span class="qr-keyword">col NOT IN ('a','b')</span><span class="qr-desc">Matches none in list</span></div>
+        <div class="qr-item"><span class="qr-keyword">col LIKE '%text%'</span><span class="qr-desc">Contains "text" (case-sensitive)</span></div>
+        <div class="qr-item"><span class="qr-keyword">col ILIKE '%text%'</span><span class="qr-desc">Contains "text" (case-insensitive)</span></div>
+        <div class="qr-item"><span class="qr-keyword">col IS NULL</span><span class="qr-desc">Value is missing</span></div>
+        <div class="qr-item"><span class="qr-keyword">col IS NOT NULL</span><span class="qr-desc">Value is present</span></div>
+        <div class="qr-item"><span class="qr-keyword">col % 1000 = 0</span><span class="qr-desc">Divisible by 1000 (round numbers)</span></div>
+        <div class="qr-item"><span class="qr-keyword">AND / OR</span><span class="qr-desc">Combine conditions (use brackets)</span></div>
+      </div>
+
+      <h2>Common Mistakes &amp; Fixes</h2>
+      <table>
+        <thead><tr><th>Mistake</th><th>Problem</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>WHERE col = NULL</code></td><td>Always returns zero rows</td><td><code>WHERE col IS NULL</code></td></tr>
+          <tr><td>SELECT col not in GROUP BY</td><td>SQL error</td><td>Add col to GROUP BY or wrap in aggregate</td></tr>
+          <tr><td>Comparing text to number</td><td>Type mismatch error</td><td>Cast: <code>amount::TEXT</code> or <code>'100'::NUMERIC</code></td></tr>
+          <tr><td>LIKE without %</td><td>Behaves like exact match</td><td>Add % wildcards: <code>LIKE '%name%'</code></td></tr>
+          <tr><td>Case-sensitive match fails</td><td>Misses 'VENDOR' vs 'vendor'</td><td>Use <code>ILIKE</code> or <code>UPPER(col) = UPPER('...')</code></td></tr>
+          <tr><td>Division by zero</td><td>Error</td><td>Wrap denominator: <code>NULLIF(col, 0)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- #content -->
+</div><!-- #main -->
+
+<script>
+// ── NAVIGATION ──
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') === `show('${id}')`) n.classList.add('active');
+  });
+
+  document.getElementById('breadcrumb').textContent =
+    'DataSense Pro · SQL Query Handbook · ' + (panel?.previousElementSibling?.textContent?.trim() || id);
+
+  window.scrollTo(0, 0);
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── COPY BUTTON ──
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText || pre.textContent;
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── SEARCH ──
+function searchNav(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+// ── KEYBOARD SHORTCUT ──
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('search-input').focus();
+  }
+});
+</script>
+</body>
+</html>

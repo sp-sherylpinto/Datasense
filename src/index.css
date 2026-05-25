@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Light Theme Variables */
+  --color-bg: #f8f7f4;
+  --color-surf: #ffffff;
+  --color-sub: #f0ebe3;
+  --color-tx: #1a1a1a;
+  --color-tx2: #4a4a4a;
+  --color-tx3: #8a7d70;
+  --color-border: #e3dcd3;
+  --color-border2: #d1c7bc;
+  --color-acc: #9a3324;
+  --color-ok: #2d5a27;
+  --color-warn: #b45309;
+  --color-err: #991b1b;
+  --color-info: #1e40af;
+}
+
+[data-theme='dark'] {
+  --color-bg: #121212;
+  --color-surf: #1e1e1e;
+  --color-sub: #2a2a2a;
+  --color-tx: #e0e0e0;
+  --color-tx2: #b0b0b0;
+  --color-tx3: #707070;
+  --color-border: #333333;
+  --color-border2: #444444;
+  --color-acc: #e57373;
+  --color-ok: #81c784;
+  --color-warn: #ffb74d;
+  --color-err: #e57373;
+  --color-info: #64b5f6;
+}
+
+@layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  body {
+    @apply bg-bg text-tx font-sans text-[13px] antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium text-[12px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer;
+  }
+  .btn-acc {
+    @apply bg-acc text-white hover:opacity-90 shadow-sm;
+  }
+  .btn-ghost {
+    @apply bg-transparent border border-border text-tx2 hover:bg-sub hover:text-tx;
+  }
+  
+  .pill {
+    @apply font-mono text-[10px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap;
+  }
+  .pill-hi { @apply bg-err bg-opacity-10 text-err; }
+  .pill-md { @apply bg-warn bg-opacity-10 text-warn; }
+  .pill-lo { @apply bg-ok bg-opacity-10 text-ok; }
+  .pill-inf { @apply bg-info bg-opacity-10 text-info; }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full hover:bg-border2;
+  }
+}

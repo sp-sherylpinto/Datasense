@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+asyncpg
+pydantic-settings
+celery
+redis
+polars
+duckdb
+pyarrow
+scikit-learn
+numpy
+aiosmtplib

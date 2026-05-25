@@ -1,0 +1,100 @@
+<h2>Where should the natural language query bar live?</h2>
+<p class="subtitle">Three placement options for the AI query input in the Data View tab</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e; border-radius: 8px; font-family: monospace; font-size: 11px; color: #ccc;">
+      <div style="background:#16213e; border-radius:6px; padding:10px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+        <span style="background:#c0392b; color:white; padding:3px 8px; border-radius:4px; font-size:10px;">✦ AI</span>
+        <span style="flex:1; background:#0f3460; border-radius:4px; padding:4px 8px; color:#aaa;">Ask a question about this data…</span>
+        <span style="background:#c0392b; color:white; padding:3px 10px; border-radius:4px; font-size:10px;">Ask</span>
+      </div>
+      <div style="background:#16213e; border-radius:6px; padding:10px;">
+        <div style="display:flex; gap:8px; margin-bottom:6px; font-size:10px; color:#888;">
+          <span>Dataset Explorer</span>
+          <span style="margin-left:auto">Total Records: 8,253</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; font-size:10px; color:#888;">
+          <span>▼ Column</span>
+          <span>🔍 Search…</span>
+        </div>
+      </div>
+      <div style="background:#16213e; border-radius:6px; padding:8px; margin-top:8px;">
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:9px; color:#aaa;">
+          <span style="color:#e94560">invoice_no</span><span style="color:#e94560">date</span><span style="color:#e94560">customer</span><span style="color:#e94560">amount</span><span style="color:#e94560">status</span>
+          <span>940012231</span><span>01-Apr-22</span><span>Sikkim Iffco…</span><span>1,65,60,593</span><span>ZSUP</span>
+          <span>960002663</span><span>01-Apr-22</span><span>Stelis Bio…</span><span>28,44,916</span><span>ZSUP</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Top of page, always visible</h3>
+      <p>AI bar sits above the filter controls. Always accessible. Best for users who will query frequently. Takes vertical space even when not in use.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e; border-radius: 8px; font-family: monospace; font-size: 11px; color: #ccc;">
+      <div style="background:#16213e; border-radius:6px; padding:10px; margin-bottom:8px;">
+        <div style="display:flex; gap:8px; margin-bottom:6px; font-size:10px; color:#888; align-items:center;">
+          <span style="font-weight:bold; color:#ddd">Dataset Explorer</span>
+          <span style="margin-left:auto; color:#888">8,253 records</span>
+          <span style="background:#c0392b; color:white; padding:2px 8px; border-radius:4px; font-size:9px;">✦ Ask AI</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; font-size:10px; color:#888;">
+          <span>▼ Column</span>
+          <span>🔍 Search…</span>
+        </div>
+      </div>
+      <div style="background:#c0392b22; border:1px solid #c0392b55; border-radius:6px; padding:10px; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+        <span style="color:#e94560; font-size:10px;">✦</span>
+        <span style="flex:1; font-size:10px; color:#aaa;">Show me the top 10 customers by assessable value</span>
+        <span style="background:#c0392b; color:white; padding:3px 10px; border-radius:4px; font-size:10px;">Ask</span>
+      </div>
+      <div style="background:#16213e; border-radius:6px; padding:8px;">
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:9px; color:#aaa;">
+          <span style="color:#e94560">invoice_no</span><span style="color:#e94560">date</span><span style="color:#e94560">customer</span><span style="color:#e94560">amount</span><span style="color:#e94560">status</span>
+          <span>940012231</span><span>01-Apr-22</span><span>Sikkim Iffco…</span><span>1,65,60,593</span><span>ZSUP</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Inline, toggled by "Ask AI" button</h3>
+      <p>A button in the header reveals the AI bar on demand. Clean by default, expands in-place when needed. Sits between the header controls and the data table.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e; border-radius: 8px; font-family: monospace; font-size: 11px; color: #ccc;">
+      <div style="background:#16213e; border-radius:6px; padding:10px; margin-bottom:8px;">
+        <div style="display:flex; gap:8px; margin-bottom:6px; font-size:10px; color:#888; align-items:center;">
+          <span style="font-weight:bold; color:#ddd">Dataset Explorer</span>
+          <span style="margin-left:auto; color:#888">8,253 records</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; font-size:10px; color:#888;">
+          <span>▼ Column</span>
+          <span>🔍 Search…</span>
+        </div>
+      </div>
+      <div style="background:#16213e; border-radius:6px; padding:8px; margin-bottom:8px;">
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:9px; color:#aaa;">
+          <span style="color:#e94560">invoice_no</span><span style="color:#e94560">date</span><span style="color:#e94560">customer</span><span style="color:#e94560">amount</span><span style="color:#e94560">status</span>
+          <span>940012231</span><span>01-Apr-22</span><span>Sikkim Iffco…</span><span>1,65,60,593</span><span>ZSUP</span>
+          <span>960002663</span><span>01-Apr-22</span><span>Stelis Bio…</span><span>28,44,916</span><span>ZSUP</span>
+          <span>940012232</span><span>03-Apr-22</span><span>Britannia…</span><span>4,87,100</span><span>ZSUP</span>
+        </div>
+      </div>
+      <div style="background:#16213e; border-radius:6px; padding:10px; display:flex; align-items:center; gap:8px; border-top: 2px solid #c0392b;">
+        <span style="background:#c0392b; color:white; padding:3px 8px; border-radius:4px; font-size:10px;">✦ AI</span>
+        <span style="flex:1; background:#0f3460; border-radius:4px; padding:4px 8px; color:#aaa; font-size:10px;">Ask a question about this data…</span>
+        <span style="background:#c0392b; color:white; padding:3px 10px; border-radius:4px; font-size:10px;">Ask</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Bottom bar, always visible</h3>
+      <p>Fixed bar at the bottom of the data table, chat-app style. The data table stays in view while you type. Natural for "ask about what I'm seeing" patterns.</p>
+    </div>
+  </div>
+
+</div>
