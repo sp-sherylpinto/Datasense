@@ -1187,7 +1187,7 @@ import { Briefcase } from 'lucide-react';
 import { api } from './lib/api';
 import { useRoute } from './lib/routing';
 import { TABS_BY_ID } from './lib/nav';
-import { normaliseColType, detectColumnType } from './lib/helpers';
+import { detectColumnType } from './lib/helpers';
 import type { FileMetadata } from './lib/types';
 
 import { Header } from './components/Header';
@@ -1214,6 +1214,7 @@ import { ClustersTab } from './tabs/analysis/ClustersTab';
 import { NetworkTab } from './tabs/analysis/NetworkTab';
 import { AnalysisTab } from './tabs/AnalysisTab';
 import { InsightsTab } from './tabs/InsightsTab';
+import { CompareTab } from './tabs/CompareTab';
 import { AIChatBot } from './components/AIChatBot';
 
 export default function App() {
@@ -1295,7 +1296,7 @@ function AppInner() {
 
     api.get('/core/audit-areas')
       .then((r) => setAuditAreas(r.data || []))
-      .catch(() => {});
+      .catch(() => setAuditAreas([])); // core schema may not be set up — fail silently
   }, [setCurrentUser, setSavedDatasets, setDatasetsLoading, setAuditAreas]);
 
   const setAuditArea = async (datasetId: string, code: string | null) => {
@@ -1338,8 +1339,6 @@ function AppInner() {
 
       const columnMeta: any[] = Array.isArray(ds.columns) ? ds.columns : [];
 
-      // Build type map using detectColumnType for best accuracy
-      // (backend type → name hints → sample data analysis)
       const sampleRows = preview.slice(0, 100);
       const initialMappings: Record<string, string> = {};
       const initialRenames: Record<string, string> = {};
@@ -1475,7 +1474,6 @@ function AppInner() {
   const handleCleanData = async () => {
     if (!file) return;
 
-    // Use detectColumnType for comparison so we compare apples to apples
     const detectedByName: Record<string, string> = {};
     const sampleRows = (file.preview || []).slice(0, 100);
     file.columnMeta?.forEach((m: any) => {
@@ -1504,46 +1502,6 @@ function AppInner() {
     }
 
     setCleaning(true);
-
-    // STEP 1 — Save user type overrides to the database FIRST
-    // so analysis always respects what the user chose, even after re-detect
-    if (!typesUnchanged && file.dataset_id) {
-      try {
-        const overrides: Record<string, string> = {};
-        Object.entries(columnMappings).forEach(([col, t]) => {
-          if (t !== (detectedByName[col] || 'text')) {
-            overrides[col] = t;
-          }
-        });
-        if (Object.keys(overrides).length > 0) {
-          await api.post(`/datasets/${file.dataset_id}/override-types`, { overrides });
-          // Update local columnMeta so the UI reflects saved overrides immediately
-          setFile(prev => {
-            if (!prev) return prev;
-            const updatedMeta = (prev.columnMeta || []).map((m: any) => {
-              if (overrides[m.name]) {
-                return { ...m, user_type: overrides[m.name] };
-              }
-              return m;
-            });
-            return { ...prev, columnMeta: updatedMeta };
-          });
-        }
-      } catch (err: any) {
-        const detail = err?.response?.data?.detail || err?.message || 'Unknown error';
-        console.error('Failed to save type overrides:', detail, err);
-        pushToast({
-          tone: 'error',
-          title: 'Override save failed',
-          body: `Could not save column type overrides: ${detail}`,
-          ttlMs: 6000,
-        });
-        setCleaning(false);
-        return;
-      }
-    }
-
-    // STEP 2 — Run the full cleaning job (renames, column order, type casting)
     await startJob('run_cleaning', {
       mapping: columnMappings,
       column_order: columnOrder,
@@ -1643,14 +1601,6 @@ function AppInner() {
               auditAreas={auditAreas}
               setAuditArea={setAuditArea}
               engagementVertical={engagement?.vertical || null}
-              columnMappings={columnMappings}
-              setColumnMappings={setColumnMappings}
-              columnRenames={columnRenames}
-              setColumnRenames={setColumnRenames}
-              columnOrder={columnOrder}
-              setColumnOrder={setColumnOrder}
-              handleCleanData={handleCleanData}
-              cleaning={cleaning}
               activeTab={activeTab}
             />
 
@@ -1664,7 +1614,7 @@ function AppInner() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.18 }}
                   >
-                    {/* ── Upload ── */}
+                    {/* ── Upload / Data Source ── */}
                     {activeTab === 'upload' && (
                       <UploadTab
                         file={file}
@@ -1727,6 +1677,20 @@ function AppInner() {
                         />
                       ))}
 
+                    {/* ── Compare ── */}
+                    {activeTab === 'compare' &&
+                      (file ? (
+                        <CompareTab
+                          file={file}
+                          savedDatasets={savedDatasets}
+                        />
+                      ) : (
+                        <EmptyState
+                          goToUpload={goToUpload}
+                          message="Upload or load a dataset first to use the Compare feature."
+                        />
+                      ))}
+
                     {/* ── Analysis Tabs ── */}
                     {activeTab === 'benford' &&
                       (file ? (
@@ -1785,7 +1749,7 @@ function AppInner() {
                 </AnimatePresence>
               </div>
 
-              {/* Footer inside scroll area — only visible at bottom */}
+              {/* Footer */}
               <footer className="border-t border-border bg-[#9a3324] py-3 text-center mt-4">
                 <p className="text-xs text-white/80 font-mono">
                   © Varma &amp; Varma Chartered Accountants ·{' '}
@@ -1807,7 +1771,6 @@ function AppInner() {
           />
         )}
 
-        {/* AI Chatbot — floats over all content */}
         <AIChatBot file={file} />
       </div>
     </ErrorBoundary>

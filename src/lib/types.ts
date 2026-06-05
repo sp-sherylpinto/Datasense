@@ -241,6 +241,10 @@
 
 
 
+
+
+
+
 export type TabType =
   | 'upload'
   | 'dataview'
@@ -253,7 +257,8 @@ export type TabType =
   | 'timeseries'
   | 'clustering'
   | 'network'
-  | 'insights';
+  | 'insights'
+  | 'compare';
 
 export type TabGroup = 'prepare' | 'analyse';
 
@@ -313,15 +318,13 @@ export type AccountingFramework = 'as' | 'ind_as';
 export type AuditAreaCategory = 'line_item' | 'methodology' | 'compliance' | 'reporting' | 'planning' | 'source_data' | 'other';
 
 export interface AuditArea {
-  id: string;                  // 'general:F-PPE' / 'bank:ADV' etc.
+  id: string;
   vertical: AuditVertical;
-  code: string;                // 'F-PPE', 'ADV', 'CLM', 'SA320', ...
+  code: string;
   title: string;
   category: AuditAreaCategory;
   display_order: number;
 }
-
-// ─── Saved Views ────────────────────────────────────────────────────────────
 
 export type FilterOp =
   | 'contains' | 'not_contains'
